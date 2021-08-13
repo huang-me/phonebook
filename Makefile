@@ -1,5 +1,7 @@
 CC ?= gcc
 CFLAGS_common ?= -Wall -std=gnu99
+OPTIONS ?= --style=kr --indent=spaces=4 --indent-switches
+ASTYLE ?= astyle
 CFLAGS_orig = -O0
 CFLAGS_opt  = -O0
 
@@ -38,6 +40,9 @@ plot: output.txt
 
 calculate: calculate.c
 	$(CC) $(CFLAGS_common) $^ -o $@
+
+style: *.[ch]
+	$(ASTYLE) $(OPTIONS) $^
 
 .PHONY: clean
 clean:
