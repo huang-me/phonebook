@@ -43,6 +43,10 @@ int main(int argc, char *argv[])
     e = pHead;
     e->pNext = NULL;
 
+#if defined(OPT)
+    entry *tail[levelNum-1] = {};
+#endif
+
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
@@ -52,10 +56,19 @@ int main(int argc, char *argv[])
             i++;
         line[i - 1] = '\0';
         i = 0;
+#if defined(OPT)
+        e = append(line, e, tail);
+#else
         e = append(line, e);
+#endif
     }
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time1 = diff_in_second(start, end);
+
+    /* remove blank node */
+    entry *tmp = pHead;
+    pHead = pHead->pNext;
+    free(tmp);
 
     /* close file as soon as possible */
     fclose(fp);
@@ -91,7 +104,6 @@ int main(int argc, char *argv[])
     printf("execution time of append() : %lf sec\n", cpu_time1);
     printf("execution time of findName() : %lf sec\n", cpu_time2);
 
-    entry *tmp;
     while (pHead->pNext) {
         tmp = pHead;
         pHead = pHead->pNext;

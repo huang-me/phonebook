@@ -2,10 +2,11 @@
 #define _PHONEBOOK_H
 
 #define MAX_LAST_NAME_SIZE 16
+#define levelNum 8
 
 /* TODO: After modifying the original version, uncomment the following
  * line to set OPT properly */
-// #define OPT 1
+#define OPT 1
 typedef struct __PHONE_BOOK_ENTRY {
     char lastName[MAX_LAST_NAME_SIZE];
     char firstName[16];
@@ -17,10 +18,10 @@ typedef struct __PHONE_BOOK_ENTRY {
     char city[16];
     char state[2];
     char zip[5];
-    struct __PHONE_BOOK_ENTRY *pNext;
+    struct __PHONE_BOOK_ENTRY *pNext, *pnNext[levelNum];
 } entry;
 
 entry *findName(char lastname[], entry *pHead);
-entry *append(char lastName[], entry *e);
+entry *append(char lastName[], entry *e, entry **tail);
 
 #endif
