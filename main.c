@@ -37,14 +37,21 @@ int main(int argc, char *argv[])
     }
 
     /* build the entry */
+#if defined(OPT)
+    entry *pHead[hashnum], **e;
+    e = malloc(sizeof(entry *)*hashnum);
+    for(int i=0; i<hashnum; i++) {
+        pHead[i] = (entry *) malloc(sizeof(entry));
+        printf("size of entry : %lu bytes\n", sizeof(entry));
+        e[i] = pHead[i];
+        pHead[i]->pNext = NULL;
+    }
+#else
     entry *pHead, *e;
     pHead = (entry *) malloc(sizeof(entry));
     printf("size of entry : %lu bytes\n", sizeof(entry));
     e = pHead;
     e->pNext = NULL;
-
-#if defined(OPT)
-    entry *tail[levelNum-1] = {};
 #endif
 
 #if defined(__GNUC__)
@@ -56,28 +63,33 @@ int main(int argc, char *argv[])
             i++;
         line[i - 1] = '\0';
         i = 0;
-#if defined(OPT)
-        e = append(line, e, tail);
-#else
         e = append(line, e);
-#endif
     }
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time1 = diff_in_second(start, end);
 
+#if defined(OPT)
+    /* remove blank node */
+    entry *tmp;
+    for(int i=0; i<hashnum; i++) {
+        tmp = pHead[i];
+        pHead[i] = pHead[i]->pNext;
+        free(tmp);
+        e[i] = pHead[i];
+    }
+#else
     /* remove blank node */
     entry *tmp = pHead;
     pHead = pHead->pNext;
     free(tmp);
+    e = pHead;
+#endif
 
     /* close file as soon as possible */
     fclose(fp);
 
-    e = pHead;
-
     /* the givn last name to find */
     char input[MAX_LAST_NAME_SIZE] = "zyxel";
-    e = pHead;
 
     assert(findName(input, e) &&
            "Did you implement findName() in " IMPL "?");
@@ -88,8 +100,9 @@ int main(int argc, char *argv[])
 #endif
     /* compute the execution time */
     clock_gettime(CLOCK_REALTIME, &start);
-    findName(input, e);
+    entry *ans = findName(input, e);
     clock_gettime(CLOCK_REALTIME, &end);
+    printf("result: %s\n", ans->lastName);
     cpu_time2 = diff_in_second(start, end);
 
     FILE *output;
@@ -104,12 +117,23 @@ int main(int argc, char *argv[])
     printf("execution time of append() : %lf sec\n", cpu_time1);
     printf("execution time of findName() : %lf sec\n", cpu_time2);
 
+#if defined(OPT)
+    for(int i=0; i<hashnum; i++) {
+        while (pHead[i]->pNext) {
+            tmp = pHead[i];
+            pHead[i] = pHead[i]->pNext;
+            free(tmp);
+        }
+        free(pHead[i]);
+    }
+#else
     while (pHead->pNext) {
         tmp = pHead;
         pHead = pHead->pNext;
         free(tmp);
     }
     free(pHead);
+#endif
 
     return 0;
 }

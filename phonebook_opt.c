@@ -6,45 +6,36 @@
 #include "phonebook_opt.h"
 
 /* FILL YOUR OWN IMPLEMENTATION HERE! */
-entry *findName(char lastname[], entry *pHead)
+entry *findName(char lastname[], entry **pHead)
 {
     /* TODO: implement */
-    for(int i=levelNum-2; i>=0; i--) {
-        while(pHead->pnNext[i] && strcasecmp(pHead->pnNext[i]->lastName, lastname) <= 0)
-            pHead = pHead->pnNext[i];
+    int hash = 0;
+    for(int i=0; i<strlen(lastname); i++) {
+        hash += lastname[i] - 'a';
     }
-    while (pHead != NULL) {
-        if (strcasecmp(lastname, pHead->lastName) == 0)
-            return pHead;
-        pHead = pHead->pNext;
+    hash %= hashnum;
+
+    while (pHead[hash] != NULL) {
+        if (strcasecmp(lastname, pHead[hash]->lastName) == 0)
+            return pHead[hash];
+        pHead[hash] = pHead[hash]->pNext;
     }
     return NULL;
 }
 
-entry *append(char lastName[], entry *e, entry *tail[])
+entry **append(char lastName[], entry **e)
 {
-    /* get random number for level */
-    int level = rand() % levelNum;
-
-    /* initialize tail for each level */
-    if(tail[0] == NULL) {
-        for(int i=0; i<levelNum; i++)
-            tail[i] = e;
+    /* generate hash number */
+    int hash = 0;
+    for(int i=0; i<strlen(lastName); i++) {
+        hash += lastName[i] - 'a';
     }
+    hash %= hashnum;
 
     /* allocate memory for the new entry and put lastName */
-    e->pNext = (entry *) malloc(sizeof(entry));
-    e = e->pNext;
-    strcpy(e->lastName, lastName);
-    e->pNext = NULL;
-
-    /* setup skiplist pointer */
-    for(int i=0; i<level; i++) {
-        tail[i]->pnNext[i] = e;
-        tail[i] = e;
-    }
-    for(int i=0; i<levelNum; i++)
-        e->pnNext[i] = NULL;
-
+    e[hash]->pNext = (entry *) malloc(sizeof(entry));
+    e[hash] = e[hash]->pNext;
+    strcpy(e[hash]->lastName, lastName);
+    e[hash]->pNext = NULL;
     return e;
 }
